@@ -2,8 +2,10 @@ import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import path from "path";
 import viteCompression from "vite-plugin-compression";
-import Components from "unplugin-vue-components/vite";
-// import { NaiveUiResolver } from "unplugin-vue-components/resolvers";
+import AutoImport from 'unplugin-auto-import/vite'
+import Components from 'unplugin-vue-components/vite';
+import { ArcoResolver } from 'unplugin-vue-components/resolvers';
+import { vitePluginForArco } from '@arco-plugins/vite-vue'
 // https://vitejs.dev/config/
 export default defineConfig({
   base: "/blockchain-wallet/",
@@ -17,7 +19,6 @@ export default defineConfig({
     ],
   },
   build: {
-    brotliSize: false,
     reportCompressedSize: false,
     chunkSizeWarningLimit: 2000,
   },
@@ -27,17 +28,28 @@ export default defineConfig({
 
   css: {
     preprocessorOptions: {
-      scss: {
+      less: {
         charset: false,
-        additionalData: `@import './src/styles/index.scss';`,
+        math: "always",
+        additionalData: `@import './src/styles/index.less';`,
       },
     },
   },
   plugins: [
     vue(),
     viteCompression(),
-    // Components({
-    //   resolvers: [NaiveUiResolver()],
-    // }),
+    AutoImport({
+      resolvers: [ArcoResolver()],
+    }),
+    vitePluginForArco({
+      style: 'css'
+    }),
+    Components({
+      resolvers: [
+        ArcoResolver({
+          sideEffect: true
+        })
+      ]
+    })
   ],
 });

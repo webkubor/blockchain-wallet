@@ -1,105 +1,9 @@
-/*
- * @Date: 2021-10-27 10:09:47
- * @LastEditTime: 2023-06-27 16:17:53
- * metamsk config
- */
-
 import { transHash16 } from "@/utils/networks";
 import { useWallect } from "@/hooks/useWallect";
 import _ from "lodash";
+import nativeMetamaskMap from './MetamaskMap.json'
 
 const { setAccount, setChain, account } = useWallect();
-
-const nativeMetamaskMap = [
-  {
-    chainId: "0x1",
-    chainName: "Ethereum Mainnet",
-    nativeCurrency: {
-      name: "Ether",
-      symbol: "ETH",
-      decimals: 18,
-    },
-    rpcUrls: ["https://mainnet.infura.io/v3/"],
-    blockExplorerUrls: ["https://etherscan.io/"],
-  },
-  {
-    chainId: "0x3",
-    chainName: "Ethereum Mainnet",
-    nativeCurrency: {
-      name: "Ether",
-      symbol: "ETH",
-      decimals: 18,
-    },
-    rpcUrls: ["https://mainnet.infura.io/v3/"],
-    blockExplorerUrls: ["https://rinkeby.etherscan.io/"],
-  },
-  {
-    chainId: "0x4",
-    chainName: "Ropsten Testnet Network",
-    nativeCurrency: {
-      name: "Ropsten",
-      symbol: "ROP",
-      decimals: 18,
-    },
-    rpcUrls: ["https://rinkeby.infura.io/v3/"],
-    blockExplorerUrls: ["https://rinkeby.etherscan.io/"],
-  },
-  {
-    chainId: "0x80",
-    chainName: "huobi Network",
-    nativeCurrency: {
-      name: "HT",
-      symbol: "HT",
-      decimals: 18,
-    },
-    rpcUrls: ["https://http-mainnet-node.huobichain.com"],
-    blockExplorerUrls: ["https://hecoinfo.com"],
-  },
-  {
-    chainId: "0x38",
-    chainName: "Binance Smart Chain",
-    nativeCurrency: {
-      name: "BNB",
-      symbol: "BNB",
-      decimals: 18,
-    },
-    rpcUrls: ["https://bsc-dataseed.binance.org/"],
-    blockExplorerUrls: ["https://bscscan.com/"],
-  },
-  {
-    chainId: "0x61",
-    chainName: "BSC-Test-Network",
-    nativeCurrency: {
-      name: "BNB",
-      symbol: "BNB",
-      decimals: 18,
-    },
-    rpcUrls: ["https://data-seed-prebsc-1-s2.binance.org:8545"],
-    blockExplorerUrls: ["https://testnet.bscscan.com"],
-  },
-  {
-    chainId: "0x539",
-    chainName: "Local-Test-Network",
-    nativeCurrency: {
-      name: "Ether",
-      symbol: "ETH",
-      decimals: 18,
-    },
-    rpcUrls: ["https://mainnet.infura.io/v3/"],
-    blockExplorerUrls: ["https://etherscan.io/"],
-  },
-  {
-    chainId: "0xa86a",
-    chainName: "Avalanche C-Chain",
-    nativeCurrency: {
-      name: "Avax",
-      symbol: "avax",
-      decimals: 18,
-    },
-    rpcUrls: ["https://api.avax.network/ext/bc/C/rpc/"],
-    blockExplorerUrls: ["https://snowtrace.io/"],
-  },
-];
 
 /**
  * @description: switch or add rpcNetwork
@@ -280,14 +184,14 @@ function handelNewMessage(msg) {
  */
 function _listeningMetamsk() {
   const { ethereum } = window;
+  addEthereumListeners(ethereum)
+}
 
+
+function addEthereumListeners(ethereum) {
   ethereum.on("chainChanged", handleNewChain);
-
   ethereum.on("accountsChanged", handleNewAccount);
-
   ethereum.on("message", handelNewMessage);
-
   ethereum.on("connect", _.throttle(handelConnectInfo, 1000));
-
   ethereum.on("disconnect", _.throttle(handleDisConnect, 1000));
 }

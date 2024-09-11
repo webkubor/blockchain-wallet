@@ -1,23 +1,24 @@
 <template>
   <div class="user-center">
-        <div type="warning">当前连接账号:{{account}}</div>
-       <div type="success">连接状态: {{wallect.isConnected ? "已连接": "未连接"}}</div>
-       <div type="success">  {{ getNetwork ? getNetwork.name : "暂无网络连接" }}</div>
-  
-    <n-form ref="formRef" inline  size="large" style="margin-top: 30px;"  label-placement="left"
-    label-width="auto">
-      <div label="币种地址" path="address">
-        <n-input autosize style="min-width: 250px" v-model:value="model.address" placeholder="输入币种地址" />
-      </div>
-      <div>
-        <button attr-type="button" @click="onSearch">
-          查询地址
-        </button>
-      </div>
-    </n-form>
+    <a-form :model="model" :style="{width:'600px'}" auto-label-width @submit="onSearch">
+      <a-form-item label="当前网络" >
+        {{ getNetwork ? getNetwork.name : "暂无网络连接" }}
+      </a-form-item>
+      <a-form-item label="连接状态" >
+        {{ wallect.isConnected ? "已连接" : "未连接" }}
+      </a-form-item>
+      <a-form-item label="当前连接账号" path="address">
+        <a-input autosize style="min-width: 250px" :value="account" placeholder="当前连接账号" />
+      </a-form-item>
+      <a-form-item label="币种地址" path="address">
+        <a-input autosize style="min-width: 250px" v-model:value="model.address" placeholder="输入币种地址" />
+      </a-form-item>
+      <a-form-item>
+        <a-button html-type="submit">查询地址</a-button>
+      </a-form-item>
+    </a-form>
     <div class="result">
-        {{model.result}}
-
+      {{ model.result }}
     </div>
   </div>
 
@@ -26,18 +27,17 @@
   <div class="wave"></div>
 </template>
 <script setup>
-import { reactive, ref, computed } from "vue";
+import { reactive, computed } from "vue";
 import { getContractInfo } from "@/utils/networks";
-import {getMetamskConnect}  from "@/wallect/metamask"
-import {useWallect} from "@/hooks/useWallect";
+import { getMetamskConnect } from "@/wallect/metamask"
+import { useWallect } from "@/hooks/useWallect";
 
-import {getBalanceOf, symbol} from "@/contract/erc20"
+import { getBalanceOf, symbol } from "@/contract/erc20"
 
-const {account, wallect, chain} = useWallect()
-let formRef = ref(null);
+const { account, wallect, chain } = useWallect()
 const model = reactive({
   address: "0x29792d37915945987e9b83F7EA64FC924B527312",
-  result:null
+  result: null
 });
 
 getMetamskConnect()
@@ -47,14 +47,13 @@ let getNetwork = computed(() => {
   }
   return null;
 });
-document.title ="Metamask"
+document.title = "Metamask"
 function onSearch(e) {
-  e.preventDefault();
   formRef.value?.validate((errors) => {
     if (!errors) {
-    window.$message.loading("查询地址");
-     fetchBalance(model.address)
-     fetchName(model.address)
+      window.$message?.loading("查询地址");
+      fetchBalance(model.address)
+      fetchName(model.address)
     } else {
       console.log(errors);
       window.$message.error("Invalid");
@@ -63,43 +62,42 @@ function onSearch(e) {
 }
 
 async function fetchName(address) {
-    try {
-        let result  = await symbol(address, account.value)
-        model.result =result 
-        console.log(result, "fetchBalance");
-    } catch (error) {
-        console.log(error);
-    }
+  try {
+    let result = await symbol(address, account.value)
+    model.result = result
+    console.log(result, "fetchBalance");
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 async function fetchBalance(address) {
-    try {
-        let result  = await getBalanceOf(address, account.value)
-        model.result =result 
-        console.log(result, "fetchBalance");
-    } catch (error) {
-        console.log(error);
-    }
+  try {
+    let result = await getBalanceOf(address, account.value)
+    model.result = result
+    console.log(result, "fetchBalance");
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 
 
 
 </script>
-<style lang="scss" scoped>
+<style lang="less" scoped>
 .user-center {
   height: 400px;
   width: 800px;
   margin: 10vw auto;
   padding: 20px;
-  background: $card-color;
   border-radius: 12px;
 }
 
 .result {
-    border: 3px dotted  #f5576c;
-    width: 80%;
-    margin: 0 auto ;
-    height: 200px;
+  border: 1px solid #d5cece;
+  width: 80%;
+  margin: 0 auto;
+  height: 200px;
 }
 </style>

@@ -4,15 +4,13 @@
     </div>
   </template>
   <script setup>
-    import NetworkList from "@/components/networkList.vue"
+    import NetworkList from "./networkList.vue"
   
   </script>
-  <style lang="scss" scoped>
+  <style lang="less" scoped>
   .page {
-    padding-top: 20vh;
-    font-weight: 600px;
     font-size: 20px;
-    width: 100vw;
+    padding: 20vh;
   }
   </style>
   
