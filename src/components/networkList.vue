@@ -53,9 +53,9 @@
           <div class="content">
             <div class="account">
               当前连接账号：
-              <n-tag type="warning">
+              <div type="warning">
                 {{item.account}}
-              </n-tag>
+              </div>
             </div>
 
             <div class="status">
@@ -66,7 +66,7 @@
               {{ item.status ? "已连接" : "未连接" }}
             </div>
             <div class="actions">
-              <n-button
+              <button
                 class="wallet-btn"
                 strong
                 :loading="item.loading"
@@ -88,13 +88,13 @@
                   />
                 </template>
                {{item.title}}
-              </n-button>
-              <n-button
+              </button>
+              <button
                 strong
                 secondary
                 type="primary"
                 @click="$router.push(item.infoUrl)"
-                >进入功能API</n-button
+                >进入功能API</button
               >
             </div>
           </div>

@@ -1,21 +1,19 @@
 <template>
   <div class="user-center">
-    <n-space>
-        <n-tag type="warning">当前连接账号:{{account}}</n-tag>
-       <n-tag type="success">连接状态: {{wallect.isConnected ? "已连接": "未连接"}}</n-tag>
-       <n-tag type="success">  {{ getNetwork ? getNetwork.name : "暂无网络连接" }}</n-tag>
-    </n-space>
+        <div type="warning">当前连接账号:{{account}}</div>
+       <div type="success">连接状态: {{wallect.isConnected ? "已连接": "未连接"}}</div>
+       <div type="success">  {{ getNetwork ? getNetwork.name : "暂无网络连接" }}</div>
   
     <n-form ref="formRef" inline  size="large" style="margin-top: 30px;"  label-placement="left"
     label-width="auto">
-      <n-form-item label="币种地址" path="address">
+      <div label="币种地址" path="address">
         <n-input autosize style="min-width: 250px" v-model:value="model.address" placeholder="输入币种地址" />
-      </n-form-item>
-      <n-form-item>
-        <n-button attr-type="button" @click="onSearch">
+      </div>
+      <div>
+        <button attr-type="button" @click="onSearch">
           查询地址
-        </n-button>
-      </n-form-item>
+        </button>
+      </div>
     </n-form>
     <div class="result">
         {{model.result}}
