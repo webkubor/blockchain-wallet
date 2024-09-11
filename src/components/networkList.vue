@@ -103,14 +103,17 @@
     </n-list>
   </n-card>
 </template>
-<script setup>
+<script setup lang="ts">
 import { computed, ref } from "vue";
 import { useWallect } from "@/hooks/useWallect";
-import { getMetamskConnect } from "@/wallect/metamask.js";
-import { getWallectConnect } from "@/wallect/walletconnect.js";
+import { getMetamskConnect } from "@/wallect/metamask";
+// import { getWallectConnect } from "@/wallect/walletconnect.js";
 import { getContractInfo } from "@/utils/networks";
 // import { providers } from "ethers";
 // import WalletConnectProvider from "@walletconnect/web3-provider";
+import { useWeb3Modal } from '@web3modal/ethers/vue'
+  // 4. Use modal composable
+  const modal = useWeb3Modal()
 const { chain, account, wallect ,setType} = useWallect();
 
 let getNetwork = computed(() => {
@@ -148,7 +151,7 @@ async function handleConnect(title) {
   if (title === 'metamask') {
     getMetamskConnect()
   } else {
-    getWallectConnect()
+    modal.open({ view: 'Networks' })
   }
 }
 

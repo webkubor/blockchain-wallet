@@ -8,7 +8,6 @@
       <n-loading-bar-provider>
         <n-dialog-provider>
           <n-message-provider :max="1">
-            <router-view />
              <n-global-style />
           </n-message-provider>
         </n-dialog-provider>
@@ -16,9 +15,11 @@
     </n-notification-provider>
   </n-config-provider>
 </template>
-<script  setup>
+<script  lang="ts" setup>
 import { useTheme } from "@/hooks/useTheme";
+import {initModal} from "@/wallect/walletconnect";
 let { themeOverrides, local, initTheme } = useTheme();
+initModal()
 initTheme()
 </script>
 <style lang="scss">

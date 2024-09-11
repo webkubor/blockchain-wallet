@@ -4,8 +4,6 @@ import path from "path";
 import viteCompression from "vite-plugin-compression";
 import Components from "unplugin-vue-components/vite";
 import { NaiveUiResolver } from "unplugin-vue-components/resolvers";
-import { NodeGlobalsPolyfillPlugin } from "@esbuild-plugins/node-globals-polyfill";
-
 // https://vitejs.dev/config/
 export default defineConfig({
   base: "/blockchain-wallet/",
@@ -26,19 +24,7 @@ export default defineConfig({
   define: {
     global: {},
   },
-  optimizeDeps: {
-    esbuildOptions: {
-      define: {
-        global: "globalThis",
-      },
-      // Enable esbuild polyfill plugins
-      plugins: [
-        NodeGlobalsPolyfillPlugin({
-          buffer: true,
-        }),
-      ],
-    },
-  },
+
   css: {
     preprocessorOptions: {
       scss: {
