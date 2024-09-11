@@ -8,7 +8,8 @@ import { NodeGlobalsPolyfillPlugin } from "@esbuild-plugins/node-globals-polyfil
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: process.env.NODE_ENV === "development" ? "/" : "./",
+  base: "/blockchain-wallet/",
+  publicDir: "/blockchain-wallet/", 
   resolve: {
     alias: [
       {
