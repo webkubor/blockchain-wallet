@@ -9,7 +9,7 @@ import { vitePluginForArco } from '@arco-plugins/vite-vue'
 // https://vitejs.dev/config/
 export default defineConfig({
   base: "/blockchain-wallet/",
-  publicDir: "/blockchain-wallet/", 
+  // publicDir: "/blockchain-wallet/", 
   resolve: {
     alias: [
       {

@@ -6,7 +6,7 @@
     "dev": "vite --host  --open ",
     "build": "vite build",
     "preview": "vite preview",
-    "netlify-deploy-web": "netlify deploy"
+    "netlify-deploy": "vite build&&netlify deploy --prod"
   },
   "dependencies": {
     "@arco-design/web-vue": "^2.56.1",
