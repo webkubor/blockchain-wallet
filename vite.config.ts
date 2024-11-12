@@ -8,8 +8,9 @@ import { ArcoResolver } from 'unplugin-vue-components/resolvers';
 import { vitePluginForArco } from '@arco-plugins/vite-vue'
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: "/blockchain-wallet/",
-  publicDir: "/blockchain-wallet/", 
+  // base: "/blockchain-wallet/",
+  // publicDir: "/blockchain-wallet/", 
+  base: "",
   resolve: {
     alias: [
       {

@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "vite --host  --open ",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "netlify deploy"
   },
   "dependencies": {
     "@arco-design/web-vue": "^2.56.1",
