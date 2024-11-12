@@ -1,4 +1,8 @@
 [build]
-  command = "vite build"
   publish = "dist"
-  environment = { VITE_BASE_URL = "/blockchain-wallet/" }
+  command = "npm run build"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
