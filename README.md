@@ -6,3 +6,11 @@
 
 ## 登录
 https://cloud.walletconnect.com/sign-in
+
+
+
+## netlify 部署
+```
+npm install -g netlify-cli
+  ntl init
+  ```
