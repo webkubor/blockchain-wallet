@@ -1,5 +1,5 @@
 <template>
-  <a-space direction="vertical" fill>
+  <a-space direction="vertical" fill style="width: 80vw;">
       <a-descriptions :data="getWallect" bordered />
     <a-card title="钱包测试">
       <a-list :gridProps="{ gutter: 0, span: 12 }" :bordered="false">
@@ -33,7 +33,6 @@ import { useWallect } from "@/hooks/useWallect";
 import { getMetamskConnect } from "@/wallect/metamask";
 import { getContractInfo } from "@/utils/networks";
 import { useWeb3Modal } from '@web3modal/ethers/vue'
-import { useMessage } from "@/components/Message";
 const modal = useWeb3Modal()
 const { chain, account, wallect, setType } = useWallect();
 

@@ -1,96 +1,30 @@
-import _ from 'lodash'
-
 /**
- * @description: 纯数量格式化
- * @param {number} num 数字
- * @param {number} decimal 小数
- * @param {boolean} unit 是否带单位
- * @return {number}
+ * 格式化时间戳为本地时间字符串
+ * @param {number|string} timestamp - 时间戳
+ * @returns {string} 格式化后的时间字符串
  */
-export function formatNum (num, decimal = 2, unit = false) {
-  if (!num) return num
-  const units = ['', 'K', 'M', 'B', 'T']
-  let unitIndex
-  let result = num
-  if (num < 1000 * 10) {
-    // nothing
-    unitIndex = 0
-  } else if (num < Math.pow(1000, 2) * 10) {
-    // K
-    unitIndex = 1
-  } else if (num < Math.pow(1000, 3) * 10) {
-    // M
-    unitIndex = 2
-  } else if (num < Math.pow(1000, 4) * 10) {
-    // B
-    unitIndex = 3
-  } else {
-    // T
-    unitIndex = 4
-  }
-  if (unit) {
-    result = _.divide(result, Math.pow(1000, unitIndex))
-    result = retain(result, decimal)
-    result = toCurrency(result)
-    result = result + units[unitIndex]
-  } else {
-    result = retain(result, decimal)
-    result = toCurrency(result)
-  }
-  return result
-
-  function toCurrency (num) {
-    const parts = num.toString().split('.')
-    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-    return parts.join('.')
-  }
-  function retain (num, decimal) {
-    const magnification = Math.pow(10, decimal)
-    return Math.floor(num * magnification) / magnification
-  }
+export const formatDate = (timestamp) => {
+  const date = new Date(Number(timestamp) * 1000)
+  return date.toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  })
 }
 
 /**
- * @description: 按照精度截取数据(小数,科学记数法,非四舍五入)
- * @param {*}
- * @return {*} string
+ * 缩短哈希字符串显示
+ * @param {string} hash - 原始哈希字符串
+ * @param {number} [startLen=6] - 开头保留长度
+ * @param {number} [endLen=4] - 结尾保留长度
+ * @returns {string} 缩短后的哈希字符串
  */
-export function dealDecimals (value, decimals) {
-  let amount = String(value)
-  let isDealPosint = amount.split('.')
-  if (!isDealPosint && value * 1 < 0 && isDealPosint.length < 2) {
-    amount = _toNonExponential(value * 1)
-    isDealPosint = amount.split('.')
-  }
-  if (isDealPosint && isDealPosint.length === 2) {
-    const integer = isDealPosint[0]
-    const point = isDealPosint[1]
-    const maxLength = decimals * 1 + integer.length + 1
-    if (point && point.length) return amount.substring(0, maxLength)
-  }
-  return amount
-}
-
-/**
- * @description: 将科学记数法转化正常计数
- * @param {*} num
- * @return {*}
- */
-function _toNonExponential (num) {
-  const m = num.toExponential().match(/\d(?:\.(\d*))?e([+-]\d+)/)
-  return num.toFixed(Math.max(0, (m[1] || '').length - m[2]))
-}
-
-/**
- * @description: 长文本省略中间部分
- * @param {string} str 文本内容
- * @param {number} start 保留文本头部长度
- * @param {number} end 保留文本尾部长度
- * @return {string}
- */
-export function ellipsisStr (str, start = 6, end = 4) {
-  if (typeof str === 'string') {
-    return str.slice(0, start) + '...' + str.slice(-end)
-  }
-  return str
+export const shortenHash = (hash, startLen = 6, endLen = 4) => {
+  if (!hash || typeof hash !== 'string') return ''
+  if (hash.length <= startLen + endLen) return hash
+  return `${hash.slice(0, startLen)}...${hash.slice(-endLen)}`
 }

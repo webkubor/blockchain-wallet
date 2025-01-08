@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "strict": true,
+    "jsx": "preserve",
+    "useDefineForClassFields": true,
+    "sourceMap": true,  // 生成目标文件的sourceMap文件
+    "allowJs": true,    // 支持js的引用
+    "removeComments": true,     // 删除注释 
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "declaration":true, //自动生成第三方库的声明文件
+    "lib": ["esnext", "dom"],
+    "skipLibCheck": true,
+    "types": ["vitest/globals"],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],
+  "references": [{ "path": "./tsconfig.node.json" }]
+}

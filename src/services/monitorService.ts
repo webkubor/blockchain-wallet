@@ -1,76 +1,67 @@
 import { ref } from 'vue'
-import { ethers } from 'ethers'
-import ERC20 from '@/abis/ERC20.json'
+import { USDT_CONTRACTS } from '@/utils/networks'
+import { getTransactions as getEthTransactions } from '@/contract/eth'
+import { getTransactions as getBscTransactions } from '@/contract/bsc'
 
-// 监控地址列表
-const monitoredAddresses = ref<string[]>([])
-
-// 交易记录
-const transactionRecords = ref<any[]>([])
-
-// USDT 合约地址
-const USDT_CONTRACT_ADDRESS = '0xdAC17F958D2ee523a2206206994597C13D831ec7'
-
-// 初始化 provider
-const provider = new ethers.providers.InfuraProvider('mainnet', process.env.VITE_INFURA_PROJECT_ID)
-
-// 初始化 USDT 合约
-const usdtContract = new ethers.Contract(
-  USDT_CONTRACT_ADDRESS,
-  ERC20.abi,
-  provider
-)
-
-// 添加监控地址
-export function addMonitoredAddress(address: string) {
-  if (!monitoredAddresses.value.includes(address)) {
-    monitoredAddresses.value.push(address)
-    startWatchingAddress(address)
-  }
+interface Transaction {
+  hash: string
+  timestamp: number
+  amount: string
+  status: string
+  from: string
+  to: string
 }
 
-// 获取监控地址列表
-export function getMonitoredAddresses() {
-  return monitoredAddresses.value
-}
+/**
+ * 获取监控服务实例
+ */
+export const useMonitorService = () => {
+  const loading = ref(false)
+  const error = ref(null)
 
-// 获取交易记录
-export function getTransactionRecords() {
-  return transactionRecords.value
-}
+  /**
+   * 获取指定地址的 USDT 交易记录
+   * @param {string} address - 监控地址
+   * @param {string} chain - 链类型 (ETH/BSC)
+   * @returns {Promise<Transaction[]>} 交易记录数组
+   */
+  const getTransactions = async (address: string, chain: string): Promise<Transaction[]> => {
+    try {
+      loading.value = true
+      error.value = null
 
-// 启动地址监控
-function startWatchingAddress(address: string) {
-  // 监听 Transfer 事件
-  const filter = usdtContract.filters.Transfer(null, address)
-  
-  usdtContract.on(filter, (from, to, value, event) => {
-    const record = {
-      txHash: event.transactionHash,
-      from: from,
-      to: to,
-      value: ethers.utils.formatUnits(value, 6), // USDT 6 decimals
-      timestamp: Math.floor(Date.now() / 1000)
+      const contractAddress = USDT_CONTRACTS[chain]
+      if (!contractAddress) {
+        throw new Error('不支持的链类型')
+      }
+
+      let transactions: Transaction[] = []
+      switch (chain) {
+        case 'ETH':
+          transactions = await getEthTransactions(address, contractAddress)
+          break
+        case 'BSC':
+          transactions = await getBscTransactions(address, contractAddress)
+          break
+        default:
+          throw new Error('不支持的链类型')
+      }
+
+      return transactions.map(tx => ({
+        ...tx,
+        status: tx.status ? '成功' : '失败'
+      }))
+    } catch (err) {
+      error.value = err.message
+      throw err
+    } finally {
+      loading.value = false
     }
-    
-    transactionRecords.value.unshift(record)
-  })
-}
-
-// 启动监控服务
-export function startMonitoring() {
-  // 加载已配置的地址
-  const storedAddresses = localStorage.getItem('monitoredAddresses')
-  if (storedAddresses) {
-    monitoredAddresses.value = JSON.parse(storedAddresses)
-    monitoredAddresses.value.forEach(startWatchingAddress)
   }
 
-  // 定期保存地址列表
-  setInterval(() => {
-    localStorage.setItem(
-      'monitoredAddresses',
-      JSON.stringify(monitoredAddresses.value)
-    )
-  }, 10000)
+  return {
+    loading,
+    error,
+    getTransactions
+  }
 }
