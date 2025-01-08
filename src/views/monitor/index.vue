@@ -1,119 +1,125 @@
 <template>
   <div class="monitor-container">
-    <h2>USDT 交易监控</h2>
-    
-    <div class="address-input">
-      <a-input
-        v-model="address"
-        placeholder="请输入监控地址"
-        allow-clear
-      />
-      <a-button
-        type="primary"
-        :disabled="!isValidAddress"
-        @click="startMonitor"
-      >
-        {{ isMonitoring ? '停止监控' : '开始监控' }}
-      </a-button>
-    </div>
+    <a-card class="monitor-card">
+      <template #title>
+        <span class="card-title">交易监控</span>
+      </template>
 
-    <a-table
-      :loading="loading"
-      :data="transactions"
-      :pagination="false"
-      :scroll="{ y: 'calc(100vh - 200px)' }"
-    >
-      <a-table-column title="链" data-index="chain" :width="100" />
-      <a-table-column title="交易哈希" data-index="hash" :width="200">
-        <template #cell="{ record }">
-          <a
-            :href="`${EXPLORER_URLS[record.chain]}/tx/${record.hash}`"
-            target="_blank"
-          >
-            {{ record.hash }}
-          </a>
-        </template>
-      </a-table-column>
-      <a-table-column title="时间" data-index="timestamp" :width="180">
-        <template #cell="{ record }">
-          {{ formatDate(record.timestamp) }}
-        </template>
-      </a-table-column>
-      <a-table-column title="金额 (USDT)" data-index="amount" :width="120" />
-      <a-table-column title="发送方" data-index="from" :width="200" />
-      <a-table-column title="接收方" data-index="to" :width="200" />
-    </a-table>
+      <a-space direction="vertical" size="middle" fill>
+        <a-form :model="form" :label-col-props="{ span: 6 }" layout="vertical">
+          <a-form-item field="chain" label="链 & USDT合约地址">
+            <a-select v-model="form.chain" placeholder="请选择链">
+              <a-option value="ETH">ETH - {{ USDT_CONTRACTS.ETH }}</a-option>
+              <a-option value="BSC">BSC - {{ USDT_CONTRACTS.BSC }}</a-option>
+            </a-select>
+          </a-form-item>
+
+          <a-form-item field="address" label="监听地址">
+            <a-input v-model="form.address" placeholder="请输入要监听的账户地址" />
+          </a-form-item>
+
+          <a-form-item>
+            <a-button type="primary" @click="handleStartMonitor">
+              开始监控
+            </a-button>
+          </a-form-item>
+        </a-form>
+
+        <a-divider />
+
+        <a-table :data="transactions" :bordered="false">
+          <a-table-column title="交易哈希" data-index="hash" />
+          <a-table-column title="区块高度" data-index="timestamp" />
+          <a-table-column title="金额" data-index="amount" />
+          <a-table-column title="发送方" data-index="from" />
+          <a-table-column title="接收方" data-index="to" />
+          <template #empty>
+            <a-empty description="暂无交易记录" />
+          </template>
+        </a-table>
+      </a-space>
+    </a-card>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onUnmounted } from 'vue'
-import { MultiChainMonitor } from '../../services/multiChainMonitorService'
-import { USDT_CONTRACTS, EXPLORER_URLS } from '../../utils/networks'
-import { formatDate } from '../../utils/format'
+import { reactive, ref } from 'vue'
+import { USDT_CONTRACTS } from '@/utils/networks'
+import { useMonitorService } from '@/services/monitorService'
 
-interface Transaction {
-  hash: string
-  timestamp: number
-  amount: string
-  status: boolean
-  from: string
-  to: string
-  chain: string
-}
-
-const address = ref('')
-const transactions = ref<Transaction[]>([])
-const loading = ref(false)
-const isMonitoring = ref(false)
-let monitor: MultiChainMonitor | null = null
-
-const isValidAddress = computed(() => {
-  return /^0x[a-fA-F0-9]{40}$/.test(address.value)
+const { watchTransferEvents } = useMonitorService()
+const form = reactive({
+  address: '0x0585b2D1Df27523712561163F73210096202aD52',
+  chain: 'ETH' as 'ETH' | 'BSC'
 })
 
-function startMonitor() {
-  if (isMonitoring.value) {
-    stopMonitor()
+const transactions = ref<Array<{
+  hash: string
+  from: string
+  to: string
+  amount: string
+  timestamp: number
+}>>([])
+
+const handleStartMonitor = async () => {
+  if (!form.address) {
     return
   }
 
-  loading.value = true
-  transactions.value = []
-  
-  monitor = new MultiChainMonitor(
-    address.value,
-    (newTransactions) => {
-      transactions.value = [...newTransactions, ...transactions.value]
-      loading.value = false
+  try {
+    const unsubscribe = watchTransferEvents(
+      form.address,
+      form.chain,
+      (event) => {
+        transactions.value.unshift({
+          hash: event.hash,
+          from: event.from,
+          to: event.to,
+          amount: event.amount,
+          timestamp: Date.now()
+        })
+      }
+    )
+
+    return () => {
+      unsubscribe()
     }
-  )
-
-  monitor.start()
-  isMonitoring.value = true
-}
-
-function stopMonitor() {
-  if (monitor) {
-    monitor.stop()
-    monitor = null
-    isMonitoring.value = false
+  } catch (error) {
+    console.error('监控失败:', error)
   }
 }
-
-onUnmounted(() => {
-  stopMonitor()
-})
 </script>
 
-<style scoped>
+<style lang="less" scoped>
 .monitor-container {
-  padding: 20px;
-}
-
-.address-input {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
+  padding: 16px;
+  
+  .monitor-card {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 16px;
+    
+    :deep(.arco-form-item) {
+      margin-bottom: 12px;
+    }
+    
+    :deep(.arco-select) {
+      width: 100%;
+    }
+    
+    :deep(.arco-input) {
+      width: 100%;
+    }
+    
+    :deep(.arco-btn) {
+      width: 100%;
+      margin-top: 8px;
+    }
+  }
+  
+  .card-title {
+    font-size: 16px;
+    font-weight: 500;
+  }
 }
 </style>
