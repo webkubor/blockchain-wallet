@@ -7,10 +7,19 @@
 
       <a-space direction="vertical" size="middle" fill>
         <a-form :model="form" :label-col-props="{ span: 6 }" layout="vertical">
+          <a-form-item label="区块链浏览器">
+            <a-space>
+              <a :href="EXPLORER_URLS.ETH" target="_blank">ETH Explorer</a>
+              <a :href="EXPLORER_URLS.BSC" target="_blank">BSC Explorer</a>
+              <a :href="EXPLORER_URLS.TRON" target="_blank">TRON Explorer</a>
+            </a-space>
+          </a-form-item>
+
           <a-form-item field="chain" label="链 & USDT合约地址">
             <a-select v-model="form.chain" placeholder="请选择链">
               <a-option value="ETH">ETH - {{ USDT_CONTRACTS.ETH }}</a-option>
               <a-option value="BSC">BSC - {{ USDT_CONTRACTS.BSC }}</a-option>
+              <a-option value="TRON">TRON - {{ USDT_CONTRACTS.TRON }}</a-option>
             </a-select>
           </a-form-item>
 
@@ -33,6 +42,13 @@
           <a-table-column title="金额" data-index="amount" />
           <a-table-column title="发送方" data-index="from" />
           <a-table-column title="接收方" data-index="to" />
+          <a-table-column title="区块链浏览器">
+            <template #cell="{ record }">
+              <a :href="`${EXPLORER_URLS[form.chain]}/tx/${record.hash}`" target="_blank">
+                查看详情
+              </a>
+            </template>
+          </a-table-column>
           <template #empty>
             <a-empty description="暂无交易记录" />
           </template>
@@ -44,13 +60,12 @@
 
 <script lang="ts" setup>
 import { reactive, ref } from 'vue'
-import { USDT_CONTRACTS } from '@/utils/networks'
+import { USDT_CONTRACTS,EXPLORER_URLS } from '@/utils/networks'
 import { useMonitorService } from '@/services/monitorService'
-
 const { watchTransferEvents } = useMonitorService()
 const form = reactive({
   address: '0x0585b2D1Df27523712561163F73210096202aD52',
-  chain: 'ETH' as 'ETH' | 'BSC'
+  chain: 'ETH' as 'ETH' | 'BSC' | 'TRON'
 })
 
 const transactions = ref<Array<{

@@ -1,11 +1,12 @@
 import { ref } from 'vue'
-import { USDT_CONTRACTS } from '@/utils/networks'
+import { USDT_CONTRACTS } from '../utils/networks'
 import { 
   JsonRpcProvider,
   Contract,
   formatUnits
 } from 'ethers'
-import ERC20_ABI from '@/abis/ERC20.json'
+import TronWeb from 'tronweb'
+import ERC20_ABI from '../abis/ERC20.json'
 
 interface Transaction {
   hash: string
@@ -27,16 +28,17 @@ interface TransferEvent {
 
 const RPC_URLS: Record<string, string> = {
   eth: 'https://rpc.ankr.com/eth',
-  bsc: 'https://bsc-dataseed1.defibit.io/'
+  bsc: 'https://bsc-dataseed1.defibit.io/',
+  tron: 'https://api.trongrid.io'
 }
 
 export const useMonitorService = () => {
   const loading = ref(false)
   const error = ref<string | null>(null)
 
-  const watchTransferEvents = (
+  const watchTransferEvents = async (
     address: string,
-    chain: keyof typeof USDT_CONTRACTS,
+    chain: 'ETH' | 'BSC' | 'TRON',
     callback: (event: {
       hash: string
       from: string
@@ -49,27 +51,61 @@ export const useMonitorService = () => {
       throw new Error('不支持的链类型')
     }
 
-    const provider = new JsonRpcProvider(RPC_URLS[chain])
-    const contract = new Contract(contractAddress, ERC20_ABI, provider)
-    
-    const filter = contract.filters.Transfer(null, address)
-    const handler = (from: string, to: string, value: bigint, event: { transactionHash: string }) => {
-      callback({
-        hash: event.transactionHash,
-        from,
-        to,
-        amount: formatUnits(value, 6).toString()
+    if (chain === 'TRON') {
+      // TRON-specific event monitoring
+      const tronWeb = new TronWeb({
+        fullHost: RPC_URLS.tron
       })
-    }
-    
-    contract.on(filter, handler)
+      
+      const contract = await tronWeb.contract().at(contractAddress)
+      const filter = {
+        eventName: 'Transfer',
+        filters: {
+          to: address
+        }
+      }
+      
+      const watch = contract[filter.eventName](filter.filters)
+        .watch((err: any, event: any) => {
+          if (err) {
+            console.error('TRON event error:', err)
+            return
+          }
+          callback({
+            hash: event.transaction,
+            from: event.result.from,
+            to: event.result.to,
+            amount: (event.result.value / 1e6).toString()
+          })
+        })
+      
+      return () => {
+        watch.stop()
+      }
+    } else {
+      // EVM chains (ETH, BSC)
+      const provider = new JsonRpcProvider(RPC_URLS[chain])
+      const contract = new Contract(contractAddress, ERC20_ABI, provider)
+      
+      const filter = contract.filters.Transfer(null, address)
+      const handler = (from: string, to: string, value: bigint, event: { transactionHash: string }) => {
+        callback({
+          hash: event.transactionHash,
+          from,
+          to,
+          amount: formatUnits(value, 6).toString()
+        })
+      }
+      
+      contract.on(filter, handler)
 
-    return () => {
-      contract.off(filter, handler)
+      return () => {
+        contract.off(filter, handler)
+      }
     }
   }
 
-  const getTransactions = async (address: string, chain: keyof typeof USDT_CONTRACTS): Promise<Transaction[]> => {
+  const getTransactions = async (address: string, chain: 'ETH' | 'BSC' | 'TRON'): Promise<Transaction[]> => {
     try {
       loading.value = true
       error.value = null

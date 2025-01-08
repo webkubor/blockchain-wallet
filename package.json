@@ -13,6 +13,7 @@
     "@arco-design/web-vue": "^2.56.1",
     "@web3modal/ethers": "^5.1.7",
     "ethers": "^6.13.2",
+    "tronweb": "^6.0.0",
     "vue": "^3.5.4"
   },
   "devDependencies": {
