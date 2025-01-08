@@ -9,9 +9,7 @@
         <a-form :model="form" :label-col-props="{ span: 6 }" layout="vertical">
           <a-form-item label="区块链浏览器">
             <a-space>
-              <a :href="EXPLORER_URLS.ETH" target="_blank">ETH Explorer</a>
-              <a :href="EXPLORER_URLS.BSC" target="_blank">BSC Explorer</a>
-              <a :href="EXPLORER_URLS.TRON" target="_blank">TRON Explorer</a>
+              <a :href="EXPLORER_URLS[form.chain]" target="_blank">{{EXPLORER_URLS[form.chain]}}</a>
             </a-space>
           </a-form-item>
 
