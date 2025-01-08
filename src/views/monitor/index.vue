@@ -9,7 +9,9 @@
         <a-form :model="form" :label-col-props="{ span: 6 }" layout="vertical">
           <a-form-item label="区块链浏览器">
             <a-space>
-              <a :href="EXPLORER_URLS[form.chain]" target="_blank">{{EXPLORER_URLS[form.chain]}}</a>
+              <a :href="`${EXPLORER_URLS[form.chain]}`" target="_blank">
+                在 {{ form.chain }} 浏览器上查看
+              </a>
             </a-space>
           </a-form-item>
 
@@ -35,11 +37,15 @@
         <a-divider />
 
         <a-table :data="transactions" :bordered="false">
-          <a-table-column title="交易哈希" data-index="hash" />
-          <a-table-column title="区块高度" data-index="timestamp" />
-          <a-table-column title="金额" data-index="amount" />
-          <a-table-column title="发送方" data-index="from" />
-          <a-table-column title="接收方" data-index="to" />
+          <a-table-column title="交易哈希" dataIndex="hash" />
+          <a-table-column title="区块高度">
+            <template #cell="{ record }">
+              {{ new Date(record.timestamp).toLocaleString() }}
+            </template>
+          </a-table-column>
+          <a-table-column title="金额" dataIndex="amount" />
+          <a-table-column title="发送方" dataIndex="from" />
+          <a-table-column title="接收方" dataIndex="to" />
           <a-table-column title="区块链浏览器">
             <template #cell="{ record }">
               <a :href="`${EXPLORER_URLS[form.chain]}/tx/${record.hash}`" target="_blank">
@@ -57,10 +63,11 @@
 </template>
 
 <script lang="ts" setup>
-import { reactive, ref } from 'vue'
-import { USDT_CONTRACTS,EXPLORER_URLS } from '@/utils/networks'
-import { useMonitorService } from '@/services/monitorService'
-const { watchTransferEvents } = useMonitorService()
+import { reactive, ref, onUnmounted } from 'vue'
+import { debounce } from 'lodash-es'
+import { USDT_CONTRACTS, EXPLORER_URLS } from '@/utils/networks'
+import { monitorService } from '@/services/monitorService'
+
 const form = reactive({
   address: '0x0585b2D1Df27523712561163F73210096202aD52',
   chain: 'ETH' as 'ETH' | 'BSC' | 'TRON'
@@ -74,15 +81,18 @@ const transactions = ref<Array<{
   timestamp: number
 }>>([])
 
-const handleStartMonitor = async () => {
-  if (!form.address) {
-    return
-  }
+let unsubscribe: (() => void) | null = null
 
+const handleStartMonitor = debounce(async () => {
+  if (!form.address) return
   try {
-    const unsubscribe = watchTransferEvents(
-      form.address,
+    // 取消现有监听
+    unsubscribe?.()
+
+    // 启动新的监听
+    unsubscribe = await monitorService.watchTransferEvents(
       form.chain,
+      form.address,
       (event) => {
         transactions.value.unshift({
           hash: event.hash,
@@ -93,46 +103,48 @@ const handleStartMonitor = async () => {
         })
       }
     )
-
-    return () => {
-      unsubscribe()
-    }
   } catch (error) {
     console.error('监控失败:', error)
   }
-}
+}, 300)
+
+onUnmounted(() => {
+  unsubscribe?.()
+})
 </script>
 
 <style lang="less" scoped>
 .monitor-container {
   padding: 16px;
-  
+
   .monitor-card {
     max-width: 800px;
     margin: 0 auto;
     padding: 16px;
-    
+
     :deep(.arco-form-item) {
       margin-bottom: 12px;
     }
-    
-    :deep(.arco-select) {
-      width: 100%;
-    }
-    
+
+    :deep(.arco-select),
     :deep(.arco-input) {
       width: 100%;
     }
-    
+
     :deep(.arco-btn) {
       width: 100%;
       margin-top: 8px;
     }
   }
-  
+
   .card-title {
     font-size: 16px;
     font-weight: 500;
+  }
+
+  :deep(.arco-table) {
+    margin-top: 16px;
+    max-width: 100%;
   }
 }
 </style>

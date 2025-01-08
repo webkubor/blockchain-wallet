@@ -1,6 +1,6 @@
 import { transHash16 } from "@/utils/networks";
 import { useWallect } from "@/hooks/useWallect";
-import _ from "lodash";
+import _ from "lodash-es";
 import nativeMetamaskMap from './MetamaskMap.json'
 
 const { setAccount, setChain, account } = useWallect();

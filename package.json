@@ -13,6 +13,7 @@
     "@arco-design/web-vue": "^2.56.1",
     "@web3modal/ethers": "^5.1.7",
     "ethers": "^6.13.2",
+    "lodash-es": "^4.17.21",
     "tronweb": "^6.0.0",
     "vue": "^3.5.4"
   },
@@ -22,7 +23,6 @@
     "ityped": "^1.0.3",
     "less": "^4.2.0",
     "less-loader": "^12.2.0",
-    "lodash": "^4.17.21",
     "unplugin-auto-import": "^0.18.2",
     "unplugin-vue-components": "^0.22.12",
     "vite": "^5.4.3",
